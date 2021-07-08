@@ -256,7 +256,11 @@ void onExit()
 
 int main(int argc, char* argv[])
 {
-	srand((unsigned int)time(NULL));
+	{
+		void* mem = malloc(1);
+		free(mem);
+		srand((unsigned int)(time(NULL) + (size_t)mem));
+	}
 
 	std::locale::global(std::locale("C"));
 

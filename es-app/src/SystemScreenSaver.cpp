@@ -41,7 +41,6 @@ SystemScreenSaver::SystemScreenSaver(Window* window) :
 	std::string path = getTitleFolder();
 	if(!Utils::FileSystem::exists(path))
 		Utils::FileSystem::createDirectory(path);
-	srand((unsigned int)time(NULL));
 	mSwapTimeout = 30000;
 }
 
