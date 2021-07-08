@@ -18,6 +18,8 @@
 using namespace Utils;
 
 std::vector<SystemData*> SystemData::sSystemVector;
+std::vector<SystemData*> SystemData::sSystemVectorShuffled;
+std::ranlux48            SystemData::sURBG = std::ranlux48(std::random_device()());
 
 SystemData::SystemData(const std::string& name, const std::string& fullName, SystemEnvironmentData* envData, const std::string& themeFolder, bool CollectionSystem) :
 	mName(name), mFullName(fullName), mEnvData(envData), mThemeFolder(themeFolder), mIsCollectionSystem(CollectionSystem), mIsGameSystem(true)
@@ -533,29 +535,20 @@ unsigned int SystemData::getGameCount() const
 
 SystemData* SystemData::getRandomSystem()
 {
-	//  this is a bit brute force. It might be more efficient to just to a while (!gameSystem) do random again...
-	unsigned int total = 0;
-	for(auto it = sSystemVector.cbegin(); it != sSystemVector.cend(); it++)
+	if(sSystemVectorShuffled.empty())
 	{
-		if ((*it)->isGameSystem())
-			total ++;
+		if(!sSystemVector.empty())
+		{
+			sSystemVectorShuffled = sSystemVector;
+			std::shuffle(sSystemVectorShuffled.begin(), sSystemVectorShuffled.end(), sURBG);
+		}
 	}
 
-	// get random number in range
-	int target = (int)Math::round((std::rand() / (float)RAND_MAX) * (total - 1));
-	for (auto it = sSystemVector.cbegin(); it != sSystemVector.cend(); it++)
+	if(!sSystemVectorShuffled.empty())
 	{
-		if ((*it)->isGameSystem())
-		{
-			if (target > 0)
-			{
-				target--;
-			}
-			else
-			{
-				return (*it);
-			}
-		}
+		SystemData* random_system = sSystemVectorShuffled.back();
+		sSystemVectorShuffled.pop_back();
+		return random_system;
 	}
 
 	// if we end up here, there is no valid system
@@ -564,14 +557,26 @@ SystemData* SystemData::getRandomSystem()
 
 FileData* SystemData::getRandomGame()
 {
-	std::vector<FileData*> list = mRootFolder->getFilesRecursive(GAME, true);
-	unsigned int total = (int)list.size();
-	int target = 0;
-	// get random number in range
-	if (total == 0)
-		return NULL;
-	target = (int)Math::round((std::rand() / (float)RAND_MAX) * (total - 1));
-	return list.at(target);
+	if(mGameVectorShuffled.empty())
+	{
+		std::vector<FileData*> gameVector = mRootFolder->getFilesRecursive(GAME, true);
+
+		if(!gameVector.empty())
+		{
+			mGameVectorShuffled = gameVector;
+			std::shuffle(mGameVectorShuffled.begin(), mGameVectorShuffled.end(), sURBG);
+		}
+	}
+
+	if(!mGameVectorShuffled.empty())
+	{
+		FileData* random_game = mGameVectorShuffled.back();
+		mGameVectorShuffled.pop_back();
+		return random_game;
+	}
+
+	// if we end up here, there is no valid game
+	return NULL;
 }
 
 unsigned int SystemData::getDisplayedGameCount() const
