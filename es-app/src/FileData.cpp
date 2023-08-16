@@ -295,6 +295,8 @@ void FileData::launchGame(Window* window)
 	command = Utils::String::replace(command, "%ROM%", rom);
 	command = Utils::String::replace(command, "%BASENAME%", basename);
 	command = Utils::String::replace(command, "%ROM_RAW%", rom_raw);
+	command = Utils::String::replace(command, "%SYSTEMNAME%", mSystemName);
+	command = Utils::String::replace(command, "%SYSTEMPATH%", mEnvData->mStartPath);
 
 	Scripting::fireEvent("game-start", rom, basename, name);
 
