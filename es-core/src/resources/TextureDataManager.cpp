@@ -134,7 +134,6 @@ void TextureDataManager::load(std::shared_ptr<TextureData> tex, bool block)
 
 TextureLoader::TextureLoader() : mExit(false)
 {
-	mThread = new std::thread(&TextureLoader::threadProc, this);
 }
 
 TextureLoader::~TextureLoader()
@@ -145,9 +144,9 @@ TextureLoader::~TextureLoader()
 
 	// Exit the thread
 	mExit = true;
-	mEvent.notify_one();
-	mThread->join();
-	delete mThread;
+	mEvent.notify_all();
+	for(size_t i=0; i<mThreads.size(); ++i)
+		mThreads[i].join();
 }
 
 void TextureLoader::threadProc()
@@ -159,7 +158,7 @@ void TextureLoader::threadProc()
 			// Wait for an event to say there is something in the queue
 			std::unique_lock<std::mutex> lock(mMutex);
 			mEvent.wait(lock);
-			if (!mTextureDataQ.empty())
+			if (!mTextureDataQ.empty() && !mExit)
 			{
 				textureData = mTextureDataQ.front();
 				mTextureDataQ.pop_front();
@@ -186,6 +185,14 @@ void TextureLoader::threadProc()
 
 void TextureLoader::load(std::shared_ptr<TextureData> textureData)
 {
+	if(mThreads.empty())
+	{
+		const size_t threadCount = std::max(1, Settings::getInstance()->getInt("TextureLoadThreadCount"));
+
+		for(size_t i=0; i<threadCount; ++i)
+			mThreads.emplace_back(&TextureLoader::threadProc, this);
+	}
+
 	// Make sure it's not already loaded
 	if (!textureData->isLoaded())
 	{
