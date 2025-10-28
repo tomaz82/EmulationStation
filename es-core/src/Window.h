@@ -86,6 +86,7 @@ private:
 
 	HelpComponent*	mHelp;
 	ImageComponent* mBackgroundOverlay;
+	ImageComponent* mSplash;
 	ScreenSaver*	mScreenSaver;
 	InfoPopup*	mInfoPopup;
 	bool		mRenderScreenSaver;

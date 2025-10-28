@@ -18,10 +18,12 @@ Window::Window() : mNormalizeNextUpdate(false), mFrameTimeElapsed(0), mFrameCoun
 {
 	mHelp = new HelpComponent(this);
 	mBackgroundOverlay = new ImageComponent(this);
+	mSplash = new ImageComponent(this);
 }
 
 Window::~Window()
 {
+	delete mSplash;
 	delete mBackgroundOverlay;
 
 	// delete all our GUIs
@@ -89,6 +91,10 @@ bool Window::init()
 
 	mBackgroundOverlay->setImage(":/scroll_gradient.png");
 	mBackgroundOverlay->setResize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
+
+	mSplash->setResize(Renderer::getScreenWidth() * 0.6f, 0.0f);
+	mSplash->setImage(":/splash.svg");
+	mSplash->setPosition((Renderer::getScreenWidth() - mSplash->getSize().x()) / 2, (Renderer::getScreenHeight() - mSplash->getSize().y()) / 2 * 0.6f);
 
 	// update our help because font sizes probably changed
 	if(peekGui())
@@ -291,11 +297,7 @@ void Window::renderLoadingScreen(std::string text, float percent, unsigned char 
 		Renderer::drawRect(x, y, (w*percent), h, 0x006C9E00 | opacity, 0x006C9E00 | opacity); // 0xFFFFFFFF
 	}
 
-	ImageComponent splash(this, true);
-	splash.setResize(Renderer::getScreenWidth() * 0.6f, 0.0f);
-	splash.setImage(":/splash.svg");
-	splash.setPosition((Renderer::getScreenWidth() - splash.getSize().x()) / 2, (Renderer::getScreenHeight() - splash.getSize().y()) / 2 * 0.6f);
-	splash.render(trans);
+	mSplash->render(trans);
 
 	auto& font = mDefaultFonts.at(1);
 	TextCache* cache = font->buildTextCache(text, 0, 0, 0x656565FF);
