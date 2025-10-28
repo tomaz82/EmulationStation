@@ -118,6 +118,21 @@ bool TextureData::initFromRGBA(const unsigned char* dataRGBA, size_t width, size
 	return true;
 }
 
+bool TextureData::updateFromRGBA(const unsigned char* dataRGBA)
+{
+	std::unique_lock<std::mutex> lock(mMutex);
+
+	if(!mDataRGBA)
+		mDataRGBA = new unsigned char[mWidth * mHeight * 4];
+
+	memcpy(mDataRGBA, dataRGBA, mWidth * mHeight * 4);
+
+	if (mTextureID != 0)
+		Renderer::updateTexture(mTextureID, Renderer::Texture::RGBA, 0, 0, mWidth, mHeight, mDataRGBA);
+
+	return true;
+}
+
 bool TextureData::load()
 {
 	bool retval = false;
@@ -174,19 +189,22 @@ bool TextureData::uploadAndBind()
 
 void TextureData::releaseVRAM()
 {
+	if(mTextureID == 0)
+		return;
+
 	std::unique_lock<std::mutex> lock(mMutex);
-	if (mTextureID != 0)
-	{
-		Renderer::destroyTexture(mTextureID);
-		mTextureID = 0;
-	}
+	Renderer::destroyTexture(mTextureID);
+	mTextureID = 0;
 }
 
 void TextureData::releaseRAM()
 {
+	if(!mDataRGBA)
+		return;
+
 	std::unique_lock<std::mutex> lock(mMutex);
 	delete[] mDataRGBA;
-	mDataRGBA = 0;
+	mDataRGBA = nullptr;
 }
 
 size_t TextureData::width()

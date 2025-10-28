@@ -54,9 +54,18 @@ void TextureResource::initFromPixels(const unsigned char* dataRGBA, size_t width
 {
 	// This is only valid if we have a local texture data object
 	assert(mTextureData != nullptr);
-	mTextureData->releaseVRAM();
-	mTextureData->releaseRAM();
-	mTextureData->initFromRGBA(dataRGBA, width, height);
+
+	if((mTextureData->width() != width) || (mTextureData->height() != height))
+	{
+		mTextureData->releaseVRAM();
+		mTextureData->releaseRAM();
+		mTextureData->initFromRGBA(dataRGBA, width, height);
+	}
+	else
+	{
+		mTextureData->updateFromRGBA(dataRGBA);
+	}
+
 	// Cache the image dimensions
 	mSize = Vector2i((int)width, (int)height);
 	mSourceSize = Vector2f(mTextureData->sourceWidth(), mTextureData->sourceHeight());

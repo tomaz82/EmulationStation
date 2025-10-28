@@ -20,6 +20,7 @@ public:
 	bool initSVGFromMemory(const unsigned char* fileData, size_t length);
 	bool initImageFromMemory(const unsigned char* fileData, size_t length);
 	bool initFromRGBA(const unsigned char* dataRGBA, size_t width, size_t height);
+	bool updateFromRGBA(const unsigned char* dataRGBA);
 
 	// Read the data into memory if necessary
 	bool load();
