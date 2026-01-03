@@ -52,6 +52,7 @@ public:
 	ImageGridComponent(Window* window);
 
 	void add(const std::string& name, const std::string& imagePath, const T& obj);
+	void flushCachedTextures();
 
 	bool input(InputConfig* config, Input input) override;
 	void update(int deltaTime) override;
@@ -95,6 +96,7 @@ private:
 	Vector2i mGridDimension;
 	std::shared_ptr<ThemeData> mTheme;
 	std::vector< std::shared_ptr<GridTileComponent> > mTiles;
+	std::vector<std::shared_ptr<TextureResource>> mCachedTextures;
 
 	int mStartPosition;
 
@@ -151,6 +153,12 @@ void ImageGridComponent<T>::add(const std::string& name, const std::string& imag
 
 	static_cast<IList< ImageGridData, T >*>(this)->add(entry);
 	mEntriesDirty = true;
+}
+
+template<typename T>
+void ImageGridComponent<T>::flushCachedTextures()
+{
+	mCachedTextures.clear();
 }
 
 template<typename T>
@@ -600,12 +608,13 @@ void ImageGridComponent<T>::updateTiles(bool allowAnimation, bool updateSelected
 		return;
 	}
 
-	// Temporary store previous textures so they can't be unloaded
-	std::vector<std::shared_ptr<TextureResource>> previousTextures;
+	// cache previous textures so they can't be unloaded
 	for (int ti = 0; ti < (int)mTiles.size(); ti++)
 	{
 		std::shared_ptr<GridTileComponent> tile = mTiles.at(ti);
-		previousTextures.push_back(tile->getTexture());
+		std::shared_ptr<TextureResource> texture = tile->getTexture();
+		if(texture)
+			mCachedTextures.push_back(texture);
 	}
 
 	// Update the tiles

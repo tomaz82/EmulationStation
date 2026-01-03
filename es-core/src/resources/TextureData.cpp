@@ -247,6 +247,11 @@ void TextureData::setSourceSize(float width, float height)
 			releaseRAM();
 		}
 	}
+	else
+	{
+		mSourceWidth = width;
+		mSourceHeight = height;
+	}
 }
 
 size_t TextureData::getVRAMUsage()

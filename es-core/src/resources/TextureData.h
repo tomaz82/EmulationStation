@@ -42,11 +42,13 @@ public:
 
 	size_t width();
 	size_t height();
+	void setSize(const size_t _width, const size_t _height) { mWidth = _width; mHeight = _height; }
 	float sourceWidth();
 	float sourceHeight();
 	void setSourceSize(float width, float height);
 
 	bool tiled() { return mTile; }
+	std::string path() { return mPath; }
 
 private:
 	std::mutex		mMutex;

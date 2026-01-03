@@ -2,6 +2,8 @@
 
 #include "resources/TextureData.h"
 #include "resources/TextureResource.h"
+#include "utils/FileSystemUtil.h"
+#include "utils/StringUtil.h"
 #include "Settings.h"
 
 TextureDataManager::TextureDataManager()
@@ -196,6 +198,27 @@ void TextureLoader::load(std::shared_ptr<TextureData> textureData)
 	// Make sure it's not already loaded
 	if (!textureData->isLoaded())
 	{
+		const std::string ext = Utils::String::toLower(Utils::FileSystem::getExtension(textureData->path()));
+
+		if(ext == ".png")
+		{
+			const std::string respath = ResourceManager::getInstance()->getResourcePath(textureData->path());
+			unsigned char header[24];
+			FILE* file = fopen(respath.c_str(), "rb");
+			if (file && fread(header, 1, 24, file) == 24)
+			{
+				if (header[0] == 0x89 && header[1] == 'P' && header[2] == 'N' && header[3] == 'G' && header[4] == 0x0D && header[5] == 0x0A && header[6] == 0x1A && header[7] == 0x0A && header[12] == 'I' && header[13] == 'H' && header[14] == 'D' && header[15] == 'R')
+				{
+					const size_t width  = (header[16] << 24) + (header[17] << 16) + (header[18] << 8) + (header[19] << 0);
+					const size_t height = (header[20] << 24) + (header[21] << 16) + (header[22] << 8) + (header[23] << 0);
+
+					textureData->setSize(width, height);
+					textureData->setSourceSize(width, height);
+				}
+			}
+			fclose(file);
+		}
+
 		std::unique_lock<std::mutex> lock(mMutex);
 		// Remove it from the queue if it is already there
 		auto td = mTextureDataLookup.find(textureData.get());

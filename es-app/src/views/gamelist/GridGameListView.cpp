@@ -512,4 +512,5 @@ void GridGameListView::onShow()
 
 void GridGameListView::onFocusLost() {
 	mDescContainer.reset();
+	mGrid.flushCachedTextures();
 }

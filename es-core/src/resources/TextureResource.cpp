@@ -1,6 +1,7 @@
 #include "resources/TextureResource.h"
 
 #include "utils/FileSystemUtil.h"
+#include "utils/StringUtil.h"
 #include "resources/TextureData.h"
 
 TextureDataManager		TextureResource::sTextureDataManager;
@@ -12,6 +13,8 @@ TextureResource::TextureResource(const std::string& path, bool tile, bool dynami
 	// Create a texture data object for this texture
 	if (!path.empty())
 	{
+		const std::string ext = Utils::String::toLower(Utils::FileSystem::getExtension(path));
+
 		// If there is a path then the 'dynamic' flag tells us whether to use the texture
 		// data manager to manage loading/unloading of this texture
 		std::shared_ptr<TextureData> data;
@@ -20,7 +23,7 @@ TextureResource::TextureResource(const std::string& path, bool tile, bool dynami
 			data = sTextureDataManager.add(this, tile);
 			data->initFromPath(path);
 			// Force the texture manager to load it using a blocking load
-			sTextureDataManager.load(data, true);
+			sTextureDataManager.load(data, ext != ".png");
 		}
 		else
 		{
@@ -31,8 +34,11 @@ TextureResource::TextureResource(const std::string& path, bool tile, bool dynami
 			data->load();
 		}
 
-		mSize = Vector2i((int)data->width(), (int)data->height());
-		mSourceSize = Vector2f(data->sourceWidth(), data->sourceHeight());
+		if(mSize == Vector2i(0, 0))
+		{
+			mSize = Vector2i((int)data->width(), (int)data->height());
+			mSourceSize = Vector2f(data->sourceWidth(), data->sourceHeight());
+		}
 	}
 	else
 	{
