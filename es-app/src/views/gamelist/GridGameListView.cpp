@@ -172,6 +172,13 @@ const std::string GridGameListView::getImagePath(FileData* file)
 
 void GridGameListView::populateList(const std::vector<FileData*>& files)
 {
+	// only thing in files is a folder, so enter it
+	if ((files.size() == 1) && (files[0]->getType() == FOLDER))
+	{
+		populateList(files[0]->getChildrenListToDisplay());
+		return;
+	}
+
 	mGrid.clear();
 	mHeaderText.setText(mRoot->getSystem()->getFullName());
 	if (files.size() > 0)

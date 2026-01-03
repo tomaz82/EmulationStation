@@ -41,6 +41,13 @@ void BasicGameListView::onFileChanged(FileData* file, FileChangeType change)
 
 void BasicGameListView::populateList(const std::vector<FileData*>& files)
 {
+	// only thing in files is a folder, so enter it
+	if ((files.size() == 1) && (files[0]->getType() == FOLDER))
+	{
+		populateList(files[0]->getChildrenListToDisplay());
+		return;
+	}
+
 	mList.clear();
 	mHeaderText.setText(mRoot->getSystem()->getFullName());
 	if (files.size() > 0)
